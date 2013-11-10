@@ -1,5 +1,5 @@
 requirejs.config({
-    baseUrl: 'bower_components',
+    baseUrl: '../bower_components',
     paths: {
         handlebars: 'handlebars/handlebars.amd',
         jquery: 'jquery/jquery',
@@ -16,7 +16,7 @@ requirejs(['box'],
             },
 
             template: 'templates/test.hbs',
-            data_src: '/test.json?id={{id}}',
+            data_src: 'test.json?id={{id}}',
 
             init: function(element, options) {
                 
