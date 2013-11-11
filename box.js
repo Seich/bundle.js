@@ -1,4 +1,10 @@
-define(['jquery', 'handlebars'], function($, handlebars) {
+(function (root, factory) {
+    if (typeof define === 'function' && define.amd) {
+        define(['jquery', 'handlebars'], factory);
+    } else {
+        root.Box = factory(jQuery, Handlebars);
+    }
+}(this, function ($, handlebars) {
 	var boxes = {};
 	var templates = {};
 
@@ -12,42 +18,46 @@ define(['jquery', 'handlebars'], function($, handlebars) {
 
 	Box.unBox = function(box_name, element, config) {
 		var box = boxes[box_name];
-		
+		var $element = $(element);
+		config = config || {};
+
 		box.defaults = $.extend({}, box.defaults, config.data);
-		
 		delete config.data;
 
 		config = $.extend({}, default_config, config);
 
-
-		var $element = $(element);
+		var templateDefer = new $.Deferred();
+		var dataDefer = new $.Deferred();
 
 		if ('template' in box) {
 			var getting_template = $.get(box.template);
 
 			getting_template.done(function(data) {
+				var compile = handlebars.default.compile || handlebars.compile;
 				var template = handlebars.default.compile(data);
 				templates[box.template] = template;
+
+				templateDefer.resolve();
 			});
-
-			if ('data_src' in box) {
-				getting_template.done(function() {
-					var getting_data = $.getJSON(_parseBoxDataUrl(box));
-
-					getting_data.done(function(data) {
-						box.defaults = $.extend({}, box.defaults, data);
-						console.log(box.defaults)
-						_render(box, $element, config);
-					});
-				});
-			} else {
-				getting_template.done(function() {
-					_render(box, $element, config);
-				});
-			}
 		} else {
-			_render(box, $element, config);
+			templateDefer.resolve();
 		}
+
+		if ('data_src' in box) {
+			var getting_data = $.getJSON(_parseBoxDataUrl(box));
+
+			getting_data.done(function(data) {
+				box.defaults = $.extend({}, box.defaults, data);
+				console.log(box.defaults)
+				dataDefer.resolve();
+			});
+		} else {
+			dataDefer.resolve();
+		}
+
+		$.when(templateDefer, dataDefer).done(function() {
+			_render(box, $element, config);
+		})
 	};
 
 	var _render = function(box, element, config) {
@@ -97,4 +107,4 @@ define(['jquery', 'handlebars'], function($, handlebars) {
 	};
 
 	return Box;
-});
+}));

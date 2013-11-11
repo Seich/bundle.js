@@ -7,7 +7,7 @@ requirejs.config({
     }
 });
 
-requirejs(['box'], 
+requirejs(['box', 'handlebars'], 
     function (Box) {
         Box('service', {
             defaults: {
@@ -15,18 +15,18 @@ requirejs(['box'],
                 body: 'Lorem ipsum dolor sit amet.'
             },
 
-            data_src: 'test.json?id={{id}}',
+            //data_src: 'test.json?id={{id}}',
             template: 'templates/test.hbs',
 
             init: function(element, options) {
                 // console.log(element, options, this);
             },
 
-             render: function(element, options, template) {
-                 // console.log(element, options, template(options), this);
-                 // console.log(arguments, this)
-                 this._render();
-            },
+            //  render: function(element, options, template) {
+            //      // console.log(element, options, template(options), this);
+            //      // console.log(arguments, this)
+            //      // this._render();
+            // },
 
             events: {
                 'h1 click': function(ev, el) {
@@ -38,8 +38,8 @@ requirejs(['box'],
             }
         });
 
-        Box.unBox('service', 'body', { render_method: 'html', data: {
-                'name': 'Hello'
+        Box.unBox('service', 'body', { render_method: 'append', data: {
+                'title': 'Hello'
             } 
         });
     }
