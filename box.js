@@ -6,14 +6,19 @@ define(['jquery', 'handlebars'], function($, handlebars) {
 		render_method: 'html'
 	};
 
-
 	var Box = function(box_name, box) {
 		boxes[box_name] = box;
 	};
 
 	Box.unBox = function(box_name, element, config) {
 		var box = boxes[box_name];
-		var box_config = $.extend({}, default_config, config);
+		
+		box.defaults = $.extend({}, box.defaults, config.data);
+		
+		delete config.data;
+
+		config = $.extend({}, default_config, config);
+
 
 		var $element = $(element);
 
@@ -31,29 +36,52 @@ define(['jquery', 'handlebars'], function($, handlebars) {
 
 					getting_data.done(function(data) {
 						box.defaults = $.extend({}, box.defaults, data);
-						_render(box, $element, box_config);
+						console.log(box.defaults)
+						_render(box, $element, config);
 					});
 				});
 			} else {
 				getting_template.done(function() {
-					_render(box, $element, box_config);
+					_render(box, $element, config);
 				});
 			}
 		} else {
-			_render(box, $element, box_config);
+			_render(box, $element, config);
 		}
 	};
 
-	var _render = function(box, element, box_config) {
+	var _render = function(box, element, config) {
 		var template = templates[box.template];
 
+		var render = function() {
+			var $template = $(template(box.defaults));
+
+			if ('events' in box) {
+				$.each(box.events, function(event, callback) {
+					var query = event.split(' ');
+					var event = query.pop();
+					query = query.join(' ');
+
+					$template.find(query).on(event, function(event) {
+						var element = this;
+						
+						callback.call(box, event, element);
+
+					});
+				});
+			}
+
+			element[config.render_method]($template);
+		};
+
 		if ('render' in box) {
-			box.render.call(null, element, box.defaults, template);
+			box._render = render;
+			box.render.call(box, element, box.defaults, template);
 		} else {
-			element[box_config.render_method](template(box.defaults));
+			render();
 		}
-		
-		box.init.call(null, element, box.defaults);
+
+		box.init.call(box, element, box.defaults);
 	};
 
 	var _parseBoxDataUrl = function(box) {
