@@ -1,3 +1,6 @@
 {
-	"title": "hi"
+	"todos": [
+		"Hello World", 
+		"How are you?"
+	]
 }

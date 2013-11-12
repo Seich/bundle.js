@@ -20,15 +20,14 @@
 		bundles[bundle_name] = bundle;
 	};
 
-	Bundle.open = function(bundle_name, element, config) {
+	Bundle.open = function(bundle_name, element, data, config) {
 		var bundle = bundles[bundle_name];
 		var $element = $(element);
 		config = config || {};
+		bundle.defaults = bundle.defaults || {};
 
-		bundle.defaults = $.extend({}, bundle.defaults, config.data);
-		delete config.data;
-
-		config = $.extend({}, default_config, config);
+		var defaults = $.extend({}, bundle.defaults, data);
+		config = $.extend({}, default_config, bundle.config, config);
 
 		var templateDefer = new $.Deferred();
 		var dataDefer = new $.Deferred();
@@ -48,10 +47,10 @@
 		}
 
 		if ('data_src' in bundle) {
-			var getting_data = $.getJSON(_parseBundleDataUrl(bundle));
+			var getting_data = $.getJSON(_parseBundleDataUrl(bundle, defaults));
 
 			getting_data.done(function(data) {
-				bundle.defaults = $.extend({}, bundle.defaults, data);
+				defaults = $.extend({}, defaults, data);
 				dataDefer.resolve();
 			});
 		} else {
@@ -59,11 +58,11 @@
 		}
 
 		$.when(templateDefer, dataDefer).done(function() {
-			_render(bundle, $element, config);
+			_render(bundle, $element, defaults, config);
 		});
 	};
 
-	var _render = function(bundle, element, config) {
+	var _render = function(bundle, element, defaults, config) {
 		var template = templates[bundle.template];
 
 		var render = function() {
@@ -71,7 +70,7 @@
 				throw new Error('Trying to call the render method without a template.');
 			}
 
-			var $template = $(template(bundle.defaults));
+			var $template = $(template(defaults));
 
 			if ('events' in bundle) {
 				$.each(bundle.events, function(event, callback) {
@@ -80,9 +79,9 @@
 					query = query.join(' ');
 
 					$template.find(query).on(event, function(event) {
-						var element = this;
+						var $element = $(this);
 						
-						callback.call(bundle, event, element);
+						callback.call(bundle, event, $element);
 
 					});
 				});
@@ -93,21 +92,23 @@
 
 		if ('render' in bundle) {
 			bundle._render = render;
-			bundle.render.call(bundle, element, bundle.defaults, template);
+			bundle.render.call(bundle, element, defaults, template);
 		} else {
 			render();
 		}
 
-		bundle.init.call(bundle, element, bundle.defaults);
+		if ('init' in bundle) {
+			bundle.init.call(bundle, element, defaults);
+		}
 	};
 
-	var _parseBundleDataUrl = function(bundle) {
+	var _parseBundleDataUrl = function(bundle, defaults) {
 		var url = bundle.data_src;
 		var matcher = /{{(\w*)}}/gi;
 
 		var match;
 		while((match = matcher.exec(bundle.data_src))) {
-			url = url.replace(match[0], bundle.defaults[match[1]]);
+			url = url.replace(match[0], defaults[match[1]]);
 		}
 
 		return url;

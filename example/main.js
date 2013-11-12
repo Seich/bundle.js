@@ -10,37 +10,49 @@ requirejs.config({
 requirejs(['box'],
     function (Bundle) {
         'use strict';
-        
-        Bundle('service', {
-            defaults: {
-                body: 'Lorem ipsum dolor sit amet.'
+
+        Bundle('todo', {
+            config: {
+                render_method: 'append'
             },
-
-            data_src: 'test.json?id={{id}}',
-            template: 'templates/test.hbs',
-
-            init: function(element, options) {
-                console.log(element, options, this);
-            },
-
-             render: function(element, options, template) {
-                console.log(element, options, template(options), this);
-                this._render();
-            },
-
+            template: 'templates/todo.hbs',
             events: {
-                'h1 click': function(ev, el) {
-                    console.log('h1', ev, el);
+                'button click': function(ev, el) {
+                    el.parents('li').remove();
                 },
-                'div.body span:first-child click': function() {
-                    console.log('span');
+                'input change': function(ev, el) {
+                    if (el.is(":checked")) {
+                        el.siblings('span').css('text-decoration', 'line-through');
+                    } else {
+                        el.siblings('span').css('text-decoration', 'none');
+                    }
+                }
+            }
+        });
+        
+        Bundle('list', {
+            template: 'templates/list.hbs',
+            data_src: 'test.json',
+            init: function(el, options) {
+                $.each(options.todos, function(i, todo) {
+                    Bundle.open('todo', 'ul', {
+                        todo: todo
+                    });
+                });
+            },
+            events: {
+                'input keypress': function(ev, el) {
+                    if (ev.which === 13) {
+                        Bundle.open('todo', 'ul', { 
+                            todo: el.val()
+                        });
+
+                        el.val('');
+                    }
                 }
             }
         });
 
-        Bundle.open('service', 'body', { render_method: 'append', data: {
-                'id': 12
-            }
-        });
+        Bundle.open('list', 'body');
     }
 );
