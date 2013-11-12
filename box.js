@@ -1,10 +1,12 @@
-(function (root, factory) {
+;(function (root, factory) {
     if (typeof define === 'function' && define.amd) {
         define(['jquery', 'handlebars'], factory);
     } else {
         root.Box = factory(jQuery, Handlebars);
     }
 }(this, function ($, handlebars) {
+	'use strict';
+
 	var boxes = {};
 	var templates = {};
 
@@ -33,8 +35,8 @@
 			var getting_template = $.get(box.template);
 
 			getting_template.done(function(data) {
-				var compile = handlebars.default.compile || handlebars.compile;
-				var template = handlebars.default.compile(data);
+				var compile = handlebars.compile || handlebars.default.compile;
+				var template = compile(data);
 				templates[box.template] = template;
 
 				templateDefer.resolve();
@@ -48,7 +50,6 @@
 
 			getting_data.done(function(data) {
 				box.defaults = $.extend({}, box.defaults, data);
-				console.log(box.defaults)
 				dataDefer.resolve();
 			});
 		} else {
@@ -57,19 +58,23 @@
 
 		$.when(templateDefer, dataDefer).done(function() {
 			_render(box, $element, config);
-		})
+		});
 	};
 
 	var _render = function(box, element, config) {
 		var template = templates[box.template];
 
 		var render = function() {
+			if (typeof template !== 'function') {
+				throw new Error('Trying to call the render method without a template.');
+			}
+
 			var $template = $(template(box.defaults));
 
 			if ('events' in box) {
 				$.each(box.events, function(event, callback) {
 					var query = event.split(' ');
-					var event = query.pop();
+					event = query.pop();
 					query = query.join(' ');
 
 					$template.find(query).on(event, function(event) {
@@ -99,7 +104,7 @@
 		var matcher = /{{(\w*)}}/gi;
 
 		var match;
-		while(match = matcher.exec(box.data_src)) {
+		while((match = matcher.exec(box.data_src))) {
 			url = url.replace(match[0], box.defaults[match[1]]);
 		}
 

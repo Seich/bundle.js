@@ -1,0 +1,15 @@
+{
+  "browser": true,
+  "globals": {
+  	"jQuery": true,
+    "Handlebars": true,
+    "define": true
+  },
+  "globalstrict": true,
+  "quotmark": true,
+  "smarttabs": true,
+  "trailing": true,
+  "undef": true,
+  "unused": true,
+  "boss": true
+}

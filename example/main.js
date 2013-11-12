@@ -11,22 +11,20 @@ requirejs(['box', 'handlebars'],
     function (Box) {
         Box('service', {
             defaults: {
-                id: 12,
                 body: 'Lorem ipsum dolor sit amet.'
             },
 
-            //data_src: 'test.json?id={{id}}',
+            data_src: 'test.json?id={{id}}',
             template: 'templates/test.hbs',
 
             init: function(element, options) {
-                // console.log(element, options, this);
+                console.log(element, options, this);
             },
 
-            //  render: function(element, options, template) {
-            //      // console.log(element, options, template(options), this);
-            //      // console.log(arguments, this)
-            //      // this._render();
-            // },
+             render: function(element, options, template) {
+                //console.log(element, options, template(options), this);
+                this._render();
+            },
 
             events: {
                 'h1 click': function(ev, el) {
@@ -39,7 +37,7 @@ requirejs(['box', 'handlebars'],
         });
 
         Box.unBox('service', 'body', { render_method: 'append', data: {
-                'title': 'Hello'
+                'id': 12
             } 
         });
     }
