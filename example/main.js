@@ -3,13 +3,15 @@ requirejs.config({
     paths: {
         handlebars: 'handlebars/handlebars.amd',
         jquery: 'jquery/jquery',
-        box: '../box'
+        box: '../bundle'
     }
 });
 
-requirejs(['box', 'handlebars'], 
-    function (Box) {
-        Box('service', {
+requirejs(['box'],
+    function (Bundle) {
+        'use strict';
+        
+        Bundle('service', {
             defaults: {
                 body: 'Lorem ipsum dolor sit amet.'
             },
@@ -22,23 +24,23 @@ requirejs(['box', 'handlebars'],
             },
 
              render: function(element, options, template) {
-                //console.log(element, options, template(options), this);
+                console.log(element, options, template(options), this);
                 this._render();
             },
 
             events: {
                 'h1 click': function(ev, el) {
-                    console.log("h1");
+                    console.log('h1', ev, el);
                 },
-                'div.body span:first-child click': function(ev, el) {
-                    console.log("span");
+                'div.body span:first-child click': function() {
+                    console.log('span');
                 }
             }
         });
 
-        Box.unBox('service', 'body', { render_method: 'append', data: {
+        Bundle.open('service', 'body', { render_method: 'append', data: {
                 'id': 12
-            } 
+            }
         });
     }
 );

@@ -3,7 +3,10 @@
   "globals": {
   	"jQuery": true,
     "Handlebars": true,
-    "define": true
+    "define": true,
+    "requirejs": true,
+    "Bundle": true,
+    "console": true
   },
   "globalstrict": true,
   "quotmark": true,
@@ -11,5 +14,6 @@
   "trailing": true,
   "undef": true,
   "unused": true,
-  "boss": true
+  "boss": true,
+  "debug": true
 }
