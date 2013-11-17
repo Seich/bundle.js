@@ -1,10 +1,10 @@
-;(function (root, factory) {
+;(function (namespace, factory) {
     'use strict';
-    
+
     if (typeof define === 'function' && define.amd) {
         define(['jquery', 'handlebars'], factory);
     } else {
-        root.Bundle = factory(jQuery, Handlebars);
+        namespace.Bundle = factory(jQuery, Handlebars);
     }
 }(this, function ($, handlebars) {
     'use strict';
@@ -36,7 +36,7 @@
             var getting_template = $.get(bundle.template);
 
             getting_template.done(function(data) {
-                var compile = handlebars.compile || handlebars.default.compile;
+                var compile = handlebars.compile || handlebars.default.compile; // The compile method in handlebars changes place if it's the amd version.
                 var template = compile(data);
                 templates[bundle.template] = template;
 

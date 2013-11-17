@@ -1,6 +1,6 @@
 {
-  "name": "box.js",
-  "main": "box.js",
+  "name": "bundle.js",
+  "main": "bundle.js",
   "version": "0.0.1",
   "authors": [
     "Sergio Díaz <seich@martianwabbit.com>"
