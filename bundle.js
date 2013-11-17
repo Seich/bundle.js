@@ -1,7 +1,7 @@
 ;(function(namespace, $, Handlebars) {
+    'use strict';
+    
     namespace.Bundle = function(bundle) {
-        'use strict';
-
         var templates = {};
 
         var defaults = {
