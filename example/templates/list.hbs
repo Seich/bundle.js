@@ -1,4 +1,10 @@
 <div class="list">
-	<ul></ul>
+	<ul>
+		{{#each todos}}
+			<li><button>X</button> <span>{{this}}</span> <input type="checkbox"></li>
+		{{/each}}
+	</ul>
+
 	<input type="text">
+	{{id}}
 </div>

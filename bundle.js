@@ -1,118 +1,80 @@
-;(function (namespace, factory) {
-    'use strict';
-
-    if (typeof define === 'function' && define.amd) {
-        define(['jquery', 'handlebars'], factory);
-    } else {
-        namespace.Bundle = factory(jQuery, Handlebars);
-    }
-}(this, function ($, handlebars) {
-    'use strict';
-
-    var bundles = {};
+var Bundle = function(bundle) {
     var templates = {};
 
-    var default_config = {
+    var defaults = {
         render_method: 'html'
     };
 
-    var Bundle = function(bundle_name, bundle) {
-        bundles[bundle_name] = bundle;
-    };
+    var _parseDataURL = function(url, values) {
+        var _newUrl = url;
+        var matcher = /{{(\w*)}}/gi;
 
-    Bundle.open = function(bundle_name, element, data, config) {
-        var bundle = bundles[bundle_name];
-        var $element = $(element);
-        config = config || {};
-        bundle.defaults = bundle.defaults || {};
-
-        var defaults = $.extend({}, bundle.defaults, data);
-        config = $.extend({}, default_config, bundle.config, config);
-
-        var templateDefer = new $.Deferred();
-        var dataDefer = new $.Deferred();
-
-        if ('template' in bundle) {
-            var getting_template = $.get(bundle.template);
-
-            getting_template.done(function(data) {
-                var compile = handlebars.compile || handlebars.default.compile; // The compile method in handlebars changes place if it's the amd version.
-                var template = compile(data);
-                templates[bundle.template] = template;
-
-                templateDefer.resolve();
-            });
-        } else {
-            templateDefer.resolve();
+        var match;
+        while((match = matcher.exec(url))) {
+            _newUrl = _newUrl.replace(match[0], values[match[1]]);
         }
 
-        if ('data_src' in bundle) {
-            var getting_data = $.getJSON(_parseBundleDataUrl(bundle, defaults));
-
-            getting_data.done(function(data) {
-                defaults = $.extend({}, defaults, data);
-                dataDefer.resolve();
-            });
-        } else {
-            dataDefer.resolve();
-        }
-
-        $.when(templateDefer, dataDefer).done(function() {
-            _render(bundle, $element, defaults, config);
-        });
+        return _newUrl;
     };
 
-    var _render = function(bundle, element, defaults, config) {
-        var template = templates[bundle.template];
+    return function(element, data, config) {
+        element = $(element);
+        data = $.extend({}, bundle.data, data);
+        config = $.extend({}, defaults, bundle, config);
 
-        var render = function() {
-            if (typeof template !== 'function') {
-                throw new Error('Trying to call the render method without a template.');
+        var templateFetching = new $.Deferred();
+        if (('template' in config) && typeof templates[config.template] === 'undefined') {
+            $.get(config.template).done(function(template) {
+                templates[config.template] = Handlebars.compile(template);
+                templateFetching.resolve(templates[config.template]);
+            }).fail(function(def, status, error) {
+                throw new Error('The following error occured while fetching the template: ' + error);
+            });
+        } else {
+            templateFetching.resolve(templates[config.template]);
+        }
+
+        var dataFetching = new $.Deferred();
+        if ('data_src' in config) {
+            config.data_src = _parseDataURL(config.data_src, data);
+            
+            $.getJSON(config.data_src).done(function(remote_data) {
+                data = $.extend({}, data, remote_data);
+                dataFetching.resolve(data);
+            }).fail(function(def, status, error) {
+                throw new Error('The following error occured while fetching the template: ' + error);
+            });
+        } else {
+            dataFetching.resolve(data);
+        }
+
+        $.when(templateFetching, dataFetching).done(function(template, data) {
+            var $template;
+            if (typeof template === 'function') {
+                $template = $(template(data));
             }
 
-            var $template = $(template(defaults));
+            if ('events' in config) {
+                $.each(config.events, function(event, callback) {
+                    var index = event.lastIndexOf(" ");
+                    var element = $template.find(event.substring(0, index));
+                    var action = event.substring(index, event.length);
 
-            if ('events' in bundle) {
-                $.each(bundle.events, function(event, callback) {
-                    var query = event.split(' ');
-                    event = query.pop();
-                    query = query.join(' ');
-
-                    $template.find(query).on(event, function(event) {
-                        var $element = $(this);
-                        
-                        callback.call(bundle, event, $element);
-
+                    element.on(action, function(event) {
+                        callback.call(config, event, element);
                     });
                 });
             }
 
-            element[config.render_method]($template);
-        };
+            if ('render' in config) {
+                config.render.call(config, element, data, template);
+            } else {
+                element[config.render_method]($template);
+            }
 
-        if ('render' in bundle) {
-            bundle._render = render;
-            bundle.render.call(bundle, element, defaults, template);
-        } else {
-            render();
-        }
-
-        if ('init' in bundle) {
-            bundle.init.call(bundle, element, defaults);
-        }
+            if ('init' in bundle) {
+                bundle.init.call(config, element, data);
+            }
+        });
     };
-
-    var _parseBundleDataUrl = function(bundle, defaults) {
-        var url = bundle.data_src;
-        var matcher = /{{(\w*)}}/gi;
-
-        var match;
-        while((match = matcher.exec(bundle.data_src))) {
-            url = url.replace(match[0], defaults[match[1]]);
-        }
-
-        return url;
-    };
-
-    return Bundle;
-}));
+};
