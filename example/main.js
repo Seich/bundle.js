@@ -6,11 +6,13 @@ var Todo = new Bundle({
             el.parents('li').remove();
         },
         'input change': function(ev, el) {
+            var style = 'none';
+
             if (el.is(":checked")) {
-                el.siblings('span').css('text-decoration', 'line-through');
-            } else {
-                el.siblings('span').css('text-decoration', 'none');
+                style = 'line-through'
             }
+            
+            el.siblings('span').css('text-decoration', style);
         }
     }
 });
@@ -18,15 +20,23 @@ var Todo = new Bundle({
 var List = new Bundle({
     template: 'templates/list.hbs',
     data_src: 'test.json',
-    init: function() {
-        console.log(arguments, this)
+    init: function(el, data) {
+        var self = this;
+        $.each(data.todos, function(i, todo) {
+            self.new_todo(todo);
+        });
     },
     events: {
         'input[type=text] keypress': function(ev, el) {
             if (ev.which === 13) {
                 this.new_todo(el.val());
+                el.val('');
             }
         }
+    },
+    render: function(el, data, template) {
+        el.html(template(data));
+        console.log(this)
     },
     new_todo: function(todo) {
         Todo('ul', {

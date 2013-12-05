@@ -45,7 +45,7 @@
                     data = $.extend({}, data, remote_data);
                     dataFetching.resolve(data);
                 }).fail(function(def, status, error) {
-                    throw new Error('The following error occured while fetching the template: ' + error);
+                    throw new Error('The following error occured while fetching the data: ' + error);
                 });
             } else {
                 dataFetching.resolve(data);
