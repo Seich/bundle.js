@@ -54,9 +54,13 @@ Using Bundle.js is pretty straightforward. You can define a bundle like this:
         console.log('The h1 said "hi"');
     }
 });
-
-Hello('html')
 </code></pre>
+   
+The bundle constructor generates a new function you can call to initialize the bundle. It takes three parameters:
+
+<pre><code>Hello(element, data, config);</code></pre>
+        
+<p>The element, is the element on the document where we want to initialize the bundle. The data and config are both object which can override the data and configuration of the bundle. These are basically merged internally before the render happens.</p>
         
 License
 -------
