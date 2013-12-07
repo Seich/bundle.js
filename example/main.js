@@ -34,10 +34,6 @@ var List = new Bundle({
             }
         }
     },
-    render: function(el, data, template) {
-        el.html(template(data));
-        console.log(this)
-    },
     new_todo: function(todo) {
         Todo('ul', {
             todo: todo
