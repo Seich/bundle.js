@@ -6,14 +6,22 @@
     <link rel="stylesheet" href="screen.css">
 </head>
 <body>
+   <a href="https://github.com/Seich/bundle.js"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"></a>
    <div class="container">
         <header>
             <h1>Bundle.js</h1>
             <p>The Micro View-Controller Javascript Library.</p>
+            <div class="download">
+                <a href="https://github.com/Seich/bundle.js">Get it on Github!</a>
+                <a href="https://dl.dropboxusercontent.com/u/8252879/bootstrap.zip">Download</a>
+            </div>
         </header>
         
         <h2>What is this?</h2>
-        <p>Bundle.js is what I call a View-Controller. It is not a full MVC framework, although it might become one eventually. It's basically a quick way to create a view and define how it should behave. It does support fetching data but, there isn't much you can do with it other than display it. Let me show you what I mean in the most boring way possible:</p>
+        <p>Bundle.js is what I call a View-Controller. It is not a full MVC framework, although it might become one eventually. It was built to display data and handle events in the quickest way possible. You can fetch data but that's as far as it's data manipulation skills go at the moment.</p>
+        
+        <h2>Dependencies</h2>
+        <p>Since jQuery is pretty much available everywhere, we depend on it to make bundle.js smaller. We use <a href="http://handlebarsjs.com">handlebars</a> to handle templates out of the box (you can change this to something else you might already be using).</p>
         
         <h2>Getting Started</h2>
         <p>To demonstrate what Bundle is all about, we'll be building a todo list. The first step is to build up our bundle. A todo list is basically two things (at least that's how I perceive it). The first one is the list. It's used to hold out todo items, these are the second component of the todo list.</p>
@@ -82,10 +90,57 @@ var Todo = new Bundle({
         <h2>Reference</h2>
         <p>Here's a full bundle using every part of the library:</p>
         
-        
+<pre><code data-language="javascript">new Bundle({
+    // This template will be automatically fetched and compiled.
+    template: 'template.hbs',
+    
+    // This is fetched and the data is merged into the 
+    // data object that the template will receive.
+    data_src: 'test.json',
+    
+    // This can be any jQuery method that can be used 
+    // to attach html to the DOM such as 'append', 'prepend', 'html'
+    render_method: 'html',
+    
+    // This method is called whenever a new object 
+    // is initialized right after it is rendered.
+    init: function(el, data) {
+        var self = this;
+        $.each(data.todos, function(i, todo) {
+            self.new_todo(todo);
+        });
+    },
+    
+    // This object contains a set of event bindings.
+    events: {
+        // All events should be in the form of : '[selector] [event name]'
+        'input[type=text] keypress': function(ev, el) {
+            if (ev.which === 13) {
+                this.new_todo(el.val());
+                el.val('');
+            }
+        }
+    },
+    
+    // Although you generally shouldn't have to, you can override the render method, 
+    // and do whatever you want, in order to render to screen.
+    // You receive the element, the data object and the compiled template.
+    render: function(el, data, template) {
+        el.html(template(data)); // This is pretty much the default render method.
+    },
+    
+    // You can also define your own methods and call them 
+    // from any other method in the bundle.
+    new_todo: function(todo) {
+        Todo('ul', {
+            todo: todo
+        });
+    }
+});
+</code></pre>
         
         <footer>
-            MIT-Licensed. Create by Sergio Díaz.
+            MIT-Licensed. Created by <a href="http://www.martianwabbit.com">Sergio Díaz</a>.
         </footer>
    </div>
     <script src="rainbows.js"></script>
