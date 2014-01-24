@@ -52,6 +52,14 @@ Using Bundle.js is pretty straightforward. You can define a bundle like this:
     // from any other method in the bundle.
     say_hi: function(todo) {
         console.log('The h1 said "hi"');
+    },
+    
+    // You can define methods that'll be available when a new instance is created using the external
+    // setting. This allows you to create a new instance like: new Hello().toggle();
+    external: {
+        'toggle': function(el) {
+            el.find('.dropdown').remove();
+        }
     }
 });
 </code></pre>
