@@ -1,3 +1,4 @@
+/* Bundle.js v0.1.1 | (c) Copyright (C) 2013 by Sergio Díaz | https://github.com/Seich/bundle.js/blob/master/LICENSE */
 ;(function(namespace, $, Handlebars) {
     'use strict';
     
@@ -5,7 +6,7 @@
         var templates = {};
 
         var defaults = {
-            render_method: 'html'
+            render_method: 'append'
         };
 
         var _parseDataURL = function(url, values) {
@@ -20,10 +21,10 @@
             return _newUrl;
         };
 
-        return function(element, data, config) {
+        var _bundle = function(element, data, config) {
             element = $(element);
             data = $.extend({}, bundle.data, data);
-            config = $.extend({}, defaults, bundle, config);
+            config = $.extend({ data: data }, defaults, bundle, config);
 
             var templateFetching = new $.Deferred();
             if (('template' in config) && typeof templates[config.template] === 'undefined') {
@@ -75,10 +76,21 @@
                     element[config.render_method]($template);
                 }
 
-                if ('init' in bundle) {
-                    bundle.init.call(config, element, data);
+                if ('init' in config) {
+                    config.init.call(config, element, data);
                 }
             });
+
+            if ('external' in config) {
+                $.each(config.external, function (name, func) {
+                    _bundle.prototype[name] = function() {
+                        func.apply(config, Array.prototype.slice.call(arguments));
+                    };
+                });
+            }
+
         };
+
+        return _bundle;
     };
 }(this, jQuery, Handlebars));
