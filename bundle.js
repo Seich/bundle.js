@@ -65,7 +65,7 @@
                         var action = event.substring(index, event.length);
 
                         element.on(action, function(event) {
-                            callback.call(config, event, element);
+                            callback.call(config, event, $(this));
                         });
                     });
                 }
@@ -77,7 +77,7 @@
                 }
 
                 if ('init' in config) {
-                    config.init.call(config, element, data);
+                    config.init.call(config, $template, data);
                 }
             });
 
